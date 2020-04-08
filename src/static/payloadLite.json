@@ -1,0 +1,29 @@
+{
+    "players": [
+        {
+            "name": "Kevin",
+            "id": "123",
+            "team": "red",
+            "role": "peasant"
+        },
+        {
+            "name": "Carrie",
+            "id": "456",
+            "team": "blue",
+            "role": "spyMaster"
+        },
+        {
+            "name": "Rodney",
+            "id": "789",
+            "team": null,
+            "role": null
+        }
+    ],
+    "board": {
+        "values": [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19], [20, 21, 22, 23, 24]],
+        "state": [["selected","unselected","unselected","unselected","selected"],["unselected","selected","unselected","selected","unselected"],["selected","unselected","selected","unselected","selected"],["unselected","selected","unselected","selected","unselected"],["selected","unselected","selected","unselected","selected"]],
+        "owner": [["red", "blue", "assassin", "neutral", "red"], ["blue", "neutral", "red", "blue", "neutral"], ["red", "blue", "neutral", "red", "blue"], ["neutral", "red", "blue", "neutral", "red"], ["blue", "neutral", "red", "blue", "blue"]]
+    },
+    "assassin": false,
+    "turn": "red"
+}
