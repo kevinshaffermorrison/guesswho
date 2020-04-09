@@ -251,11 +251,17 @@
                 removePlayer=null,
             }){
                 if (click){
-                    console.log(`Clicked: ${click.i}, ${click.j}`);
-                    const result = this.selected(click.i, click.j);
-                    if (result){
-                        console.log('Game Over');
-                        this.gameOver(result);
+
+                    if (this.turn != this.myTeam || this.result.winner || this.myRole == 'spyMaster'){
+                        click = false;
+                    }
+                    else {
+                        console.log(`Clicked: ${click.i}, ${click.j}`);
+                        const result = this.selected(click.i, click.j);
+                        if (result){
+                            console.log('Game Over');
+                            this.gameOver(result);
+                        }
                     }
                 }
                 if (player){
