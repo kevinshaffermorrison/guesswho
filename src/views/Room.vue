@@ -276,6 +276,7 @@
                 if (newGame){
                     console.log('New Game');
                     this.newGame();
+                    this.resetTimer(this.timer);
                 }
                 if (endTurn){
                     this.turn = this.getOtherTeam(this.turn);
