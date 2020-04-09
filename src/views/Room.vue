@@ -96,14 +96,31 @@
                 </b-row>
             </div>
             <b-button 
-                v-if="myTeam == turn"
+                v-if="myTeam == turn || clock == null"
                 block
-                :variant="myTeam == 'red' ? 'outline-danger':'outline-primary'"  
+                :variant="turn == 'red' ? 'outline-danger':'outline-primary'"  
                 @click="update({endTurn:true})"
             >End Turn</b-button>
         </b-col>
         <b-col cols="2">
-            Notes!
+            <b-row>
+                <b-col>
+                    <h4>Timer</h4>
+                    <br>
+                    <template v-if="timerOn">
+                        <span v-if="clock" :class="`${turn}-team`">
+                            {{ clock }} seconds remaining
+                        </span>
+                        <b-form-input @mouseup="setTimer(timerInput)" id="timerInput" v-model="timerInput" type="range" min="30" max="300" step="30"></b-form-input>
+                        <div class="mt-2">Round Timer: {{ timerInput/60 }} minutes</div>
+                        <br>
+                    </template>
+                    <b-button :variant="timerOn ? 'dark' : 'outline-dark'" @click="activateTimer(true)">On</b-button>
+                    <b-button :variant="timerOn ? 'outline-dark' : 'dark'" @click="activateTimer(false)">Off</b-button>
+                </b-col>
+            </b-row>
+            <hr>
+            <h4> Notes </h4>
             <b-textarea placeholder="Take some notes! But remember, these disappear when you refresh the page!" class="notes"></b-textarea>
         </b-col>
     </b-row>
@@ -143,8 +160,6 @@
                room: null,
                myName: null,
                myPlayerId: null,
-            //    myTeam: 'red',
-            //    myRole: 'peasant',
                players: [],
                board: {
                    values: [],
@@ -154,7 +169,6 @@
                score: {},
                turn: null,
                assassin: false,
-               ref: null, // don't think I need this.
                result: {
                    "message": null,
                    "winner": null,
@@ -162,12 +176,22 @@
                words: require('../static/words'),
                teams: ['red','blue'],
                initName: null,
+               clockInterval: null,
+               clock: null,
+               timer: null,
+               timerInput: 180,
+               timerOn: false,
             }
+        },
+        created(){
+            window.addEventListener('beforeunload', () => {
+                this.removePlayer();
+                this.updateRemoteRoom();
+            }, false)
         },
         async mounted() {
             this.room = this.$route.params.room;
             await this.getUser();
-            // await this.newGame();
             await this.initRoom();
         },
         computed: {
@@ -386,6 +410,33 @@
                 this.board = board;
                 this.turn = teams[0];
             },
+            activateTimer(activate, sendToRemote=true){
+                this.timerOn = activate;
+                if (!this.timerOn){
+                    this.timer = null;
+                    this.clock = null;
+                }
+                if (sendToRemote)
+                    this.setTimer(!this.timerOn ? null : this.timeInput);
+            },
+            resetTimer(time){
+                this.clock = time;
+                clearInterval(this.clockInterval);
+                this.clockInterval = setInterval(()=>{
+                    this.clock -= 1;
+                    if (this.clock <= 0){
+                        this.clock = null;
+                        clearInterval(this.clockInterval);
+                    }
+                }, 1000);
+            },
+            async setTimer(time){
+                const data = {
+                    timer: time || 'off',
+                    lastUpdated: new Date().toISOString(),
+                };
+                await fb.collection('rooms').doc(this.room).update(data);
+            },
             async updateRemoteRoom(){
                 const data = {
                     board: JSON.stringify(this.board),
@@ -399,7 +450,6 @@
             },
             async initRoom(){
                 let ref = fb.collection('rooms').doc(this.room);
-                this.ref = ref;
                 const room = await ref.get();
                 let currentData = room.data();
                 // if room doesn't exist, or last activity was more than 12 hours ago.
@@ -421,18 +471,36 @@
                 this.assassin = data.assassin;
                 this.turn = data.turn;
                 this.result = data.result;
+                const timerBefore = this.timer;
+                this.timer = data.timer === 'off' ? null : (data.timer ||  this.timer);
+                if (this.timer != timerBefore){
+                    this.activateTimer(true, false);
+                }
                 const result = this.updateScore();
                 if (result){
-                    console.log('Game Over');
                     this.gameOver(result);
                 }
             },
             async tick(snapshot){
                 this.info = snapshot.data();
-                console.log('Tick');
                 this.updateBoard(this.info);
             },
-        }
+        },
+        watch: {
+            timer(n, o){
+                if (n != o){
+                    this.resetTimer(this.timer);
+                }
+                if (!n){
+                    this.timerOn = false;
+                }
+            },
+            turn(n, o){
+                if (n != o){
+                    this.resetTimer(this.timer);
+                }
+            }
+        },
     }
 </script>
 <style>
