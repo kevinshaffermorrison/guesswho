@@ -48,7 +48,7 @@
                     <hr>
                     <div v-for="player in redTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <p class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</p>
+                        <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
                     </div>
                 </b-col>
                 <b-col class="blue-team">
@@ -56,7 +56,7 @@
                     <hr>
                     <div v-for="player in blueTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <p class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</p>
+                        <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
                     </div>
                 </b-col>
             </b-row>
@@ -66,7 +66,7 @@
                     <hr>
                     <div v-for="player in audience" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <p class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</p>
+                        <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
                     </div>
                 </b-col>
             </b-row>
