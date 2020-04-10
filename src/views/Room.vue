@@ -4,13 +4,23 @@
         {{ result.message }}
     </h5>
     <b-row>
-        <b-col sm="2">
+        <b-col>
             <h2 :class="`${turn}-team`" class="header">
-                {{turn}}'s turn <template v-if="clock">[{{clock}}]</template>
+                {{turn}}'s turn 
             </h2>
-
+            <h5>
+                <template v-if="clock && timer">
+                    {{clock}} 
+                    <template v-if="Number(clock)">
+                        second<template v-if="clock!=1">s</template>
+                    </template>
+                </template>
+            </h5>
+        </b-col>
+    </b-row>
+    <b-row>
+        <b-col sm="2">
             <hr>
-
             <h2> Score </h2>
             <b-row>
                 <b-col>
@@ -42,7 +52,7 @@
                     </div>
                 </b-col>
             </b-row>
-            <b-row>
+            <b-row v-if="audience.length > 0">
                 <b-col>
                     <h5 class="pointer" @click="update({player:{team:'audience'}})"> Audience </h5>
                     <hr>
@@ -76,13 +86,13 @@
                     </b-button>
                 </b-col>
             </b-row>
-            <hr>
+            <br>
             <b-button variant="dark" @click="update({removePlayer: true})">Leave Game</b-button>
             <b-button variant="danger" @click="update({newGame: true})">New Game</b-button>
-            <hr>
         </b-col>
 
         <b-col sm="8">
+            <hr>
             <div class="board">
                 <b-row v-for="(row,i) in board.values" :key="i">
                     <b-col sm v-for="(col,j) in row" :key="`${i}${j}`">
@@ -102,18 +112,21 @@
                 :variant="turn == 'red' ? 'outline-danger':'outline-primary'"  
                 @click="update({endTurn:true})"
             >End Turn</b-button>
-            <hr>
         </b-col>
         <b-col sm="2">
+            <hr>
             <b-row>
                 <b-col>
                     <h4>Timer</h4>
                     <br>
                     <template v-if="timerOn">
-                        <span v-if="clock" :class="`${turn}-team`">
-                            {{ clock }} seconds remaining
+                        <span v-if="clock && timer" :class="`${turn}-team`">
+                            {{clock}} 
+                            <template v-if="Number(clock)">
+                                second<template v-if="clock!=1">s</template>
+                            </template>
                         </span>
-                        <b-form-input @touchend="setTimer(timerInput)" @mouseup="setTimer(timerInput)" id="timerInput" v-model="timerInput" type="range" min="30" max="300" step="30"></b-form-input>
+                        <b-form-input @touchend="setTimer(timerInput)" @mouseup="setTimer(timerInput)" id="timerInput" v-model="timerInput" type="range" min="30" max="330" step="30"></b-form-input>
                         <div class="mt-2">Round Timer: {{ timerInput/60 }} minutes</div>
                         <br>
                     </template>
@@ -124,7 +137,6 @@
             <hr>
             <h4> Notes </h4>
             <b-textarea placeholder="Take some notes! But remember, these disappear when you refresh the page!" class="notes"></b-textarea>
-            <hr>
         </b-col>
     </b-row>
 
@@ -184,6 +196,7 @@
                timer: null,
                timerInput: 180,
                timerOn: false,
+               timesUp: false,
             }
         },
         created(){
@@ -205,7 +218,7 @@
                 return this.players.filter(p=>p.team == 'red');
             },
             audience(){
-                return this.players.filter(p=>!['red','blue'].includes(p.team));
+                return this.players.filter(p=>!['red','blue'].includes(p.team)) || [];
             },
             myTeam(){
                 const player = this.players.find(p=>p.id === this.myPlayerId) || {};
@@ -435,7 +448,7 @@
                 this.clockInterval = setInterval(()=>{
                     this.clock -= 1;
                     if (this.clock <= 0){
-                        this.clock = null;
+                        this.clock = "Time's Up!";
                         clearInterval(this.clockInterval);
                     }
                 }, 1000);
