@@ -219,8 +219,9 @@
                timerInput: 180,
                timerOn: false,
                timesUp: false,
-               wordPacks: [{text: 'Basic', value: 'basic'}, {text: 'NSFW', value: 'nsfw'}],
+               words: [],
                selectedWordPacks: ['basic'],
+               masterWordPacks: require('../static/words.json'),
             }
         },
         created(){
@@ -230,16 +231,18 @@
             }, false)
         },
         async mounted() {
+            this.words = this.masterWordPacks.find(m=>m.key==='basic').wordList;
             this.room = this.$route.params.room;
             await this.getUser();
             await this.initRoom();
         },
         computed: {
-            words(){
-                if (this.selectedWordPacks.length > 0)
-                    return [...new Set(this.selectedWordPacks.map(s=>{return require(`../static/${s}`)}).flat())];
-                else 
-                    return require(`../static/basic`);
+            wordPacks(){
+                return this.masterWordPacks
+                    .filter(p=>!p.disabled)
+                    .map(p=>{ 
+                        return {text: p.title, value: p.key}
+                });
             },
             blueTeam(){
                 return this.players.filter(p=>p.team == 'blue');
@@ -540,6 +543,12 @@
             },
         },
         watch: {
+            selectedWordPacks(n){
+                if (n && n.length > 0)
+                    this.words = [...new Set(n.map(s=>this.masterWordPacks.find(w=>w.key===s).wordList).flat())];
+                else 
+                    this.words = this.masterWordPacks.find(w=>w.key==='basic').wordList;
+            },
             timer(n, o){
                 if (n != o){
                     this.resetTimer(this.timer);
