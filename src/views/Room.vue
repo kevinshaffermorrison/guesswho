@@ -1,5 +1,13 @@
 <template>
+  <div>
   <div class="room">
+    <!-- <b-alert
+        class="fixed-bottom m-0 rounded-0"
+        variant="light"
+        dismissible
+        show
+        > <a href="https://www.paypal.me/KevinShaffer" target="_blank" style="color:gray">Donate to help with hosting</a>
+    </b-alert> -->
     <h5 class="header" v-if="result.winner">
         {{ result.message }}
     </h5>
@@ -137,6 +145,19 @@
             <hr>
             <h4> Notes </h4>
             <b-textarea placeholder="Take some notes! But remember, these disappear when you refresh the page!" class="notes"></b-textarea>
+            <hr>
+            <b-row>
+                <b-col>
+                <h4>Word Packs <small>({{words.length}})</small></h4>
+                    <b-form-checkbox-group
+                        v-model="selectedWordPacks"
+                        :options="wordPacks"
+                        stacked
+                        buttons
+                        button-variant="light"
+                    ></b-form-checkbox-group>
+                </b-col>
+            </b-row>
         </b-col>
     </b-row>
 
@@ -158,6 +179,7 @@
         <h4 class="pointer" @click="update({newGame: true})">New Game? </h4>
         </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -188,7 +210,6 @@
                    "message": null,
                    "winner": null,
                },
-               words: require('../static/words'),
                teams: ['red','blue'],
                initName: null,
                clockInterval: null,
@@ -197,6 +218,8 @@
                timerInput: 180,
                timerOn: false,
                timesUp: false,
+               wordPacks: [{text: 'Basic', value: 'basic'}, {text: 'NSFW', value: 'nsfw'}],
+               selectedWordPacks: ['basic'],
             }
         },
         created(){
@@ -211,6 +234,12 @@
             await this.initRoom();
         },
         computed: {
+            words(){
+                if (this.selectedWordPacks.length > 0)
+                    return [...new Set(this.selectedWordPacks.map(s=>{return require(`../static/${s}`)}).flat())];
+                else 
+                    return require(`../static/basic`);
+            },
             blueTeam(){
                 return this.players.filter(p=>p.team == 'blue');
             },
@@ -266,6 +295,7 @@
                 endTurn=null,
                 removePlayer=null,
             }){
+                console.log('update');
                 if (click){
 
                     if (this.turn != this.myTeam || this.result.winner || this.myRole == 'spyMaster'){
@@ -531,8 +561,7 @@
         margin: 12px;
     }
     .notes {
-        min-height: 50% !important;
-        max-height: 90% !important;
+        height: 40% !important;
     }
     .header::first-letter{
         text-transform: uppercase;
