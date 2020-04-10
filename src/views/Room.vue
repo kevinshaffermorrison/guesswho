@@ -561,7 +561,7 @@
         margin: 12px;
     }
     .notes {
-        min-height: 35% !important;
+        min-height: 256px !important;
     }
     .header::first-letter{
         text-transform: uppercase;
