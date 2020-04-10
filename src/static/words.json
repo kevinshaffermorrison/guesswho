@@ -13,13 +13,14 @@
         "disabled": false,
         "key": "popCulture",
         "title": "Pop Culture",
-        "wordList": ["Karen", "Old Town Road", "Thanks Obama", "\"Aliens\"","Flossing", "Backpack Kid", "Joe Exotic","Carole Baskin","COVID-19","Social Distancing","6 Feet","Nailed It","Game of Thrones","Iron Man","Thor","Captain America","Black Widow","NPR","Donald Trump","MAGA","Feel the Bern","Star Wars","Good Guy Greg","Old Gregg","Bad Luck Brian","Baby Yoda","Captain Picard","Animal Crossing","Grumpy Cat","The Office","Michael Scott","Dwight Shrute","Dunder Mifflin","Leslie Knope","Ron Swanson","Frodo","Gollum","Homer Simpson","Peter Griffin","Ron Burgundy","Batman","Superman","Mandalorian","Geralt of Rivia","Krispy Kreme"]
+        "wordList": ["Spongebob", "Adele Dazeem","Instagram","Facebook","Fortnite","Karen", "Old Town Road", "Thanks Obama", "\"Aliens\"","Flossing", "Backpack Kid", "Joe Exotic","Carole Baskin","COVID-19","Social Distancing","6 Feet","Nailed It","Game of Thrones","Iron Man","Thor","Captain America","Black Widow","NPR","Donald Trump","MAGA","Feel the Bern","Star Wars","Good Guy Greg","Old Gregg","Bad Luck Brian","Baby Yoda","Captain Picard","Animal Crossing","Grumpy Cat","The Office","Michael Scott","Dwight Shrute","Dunder Mifflin","Leslie Knope","Ron Swanson","Frodo","Gollum","Homer Simpson","Peter Griffin","Ron Burgundy","Batman","Superman","Mandalorian","Geralt of Rivia","Krispy Kreme"]
     },
     {
         "disabled": false,
         "key": "emojis",
         "title": "Emojis",
         "styles": "font-size:4em",
-        "wordList": ["🍆", "🌮", "😈", "☃️", "🥑", "🍕", "🍿","🎱","💩","🤡","🤖","😻","👻","🤯","🥶","🤙","🖖","🧙","🧜","🧞","🏂","🏄","🛀","🦁", "🐶","🦄","🦇","🐲","🦚","🦠","🌹","🍄","🥝","🍑","🥡","🥚","🍪","🍹","🍻","🥃","🌋","🗽","🗼","💈","🌚","🌝","🥏","🎮","📱","💡","💷","🔫","🗿","🤮","👽","💀","💣","👊","🧠","🧚","🧟","🧖","🧗","🏊","🚴","🤹","🐙","🐞","🥜","🏎️","🔥","💧","🔮","🎰","⛸️","🃏","🧶","💎","⚰️","🧻","⚔️","🎷","🎼","🥌","⚽","🌈","⚡","🛸","🏕️","🍯","🍌"]
+        "wordList": ["🍆", "🌮", "☃️", "🥑", "🍕", "🍿","🎱","💩","🤡","🤖","😻","👻","🤯","🥶","🤙","🖖","🧙","🧜","🧞","🏂","🏄","🛀","🦁", "🐶","🦄","🦇","🐲","🦚","🦠","🌹","🍄","🥝","🍑","🥡","🥚","🍪","🍹","🍻","🥃","🌋","🗽","🗼","💈","🌚","🌝","🥏","🎮","📱","💡","💷","🔫","🗿","🤮","👽","💀","💣","👊","🧠","🧚","🧟","🧖","🧗","🏊","🚴","🤹","🐙","🐞","🥜","🏎️","🔥","💧","🔮","🎰","⛸️","🃏","🧶","💎","⚰️","🧻","⚔️","🎷","🎼","🥌","⚽","🌈","⚡","🛸","🏕️","🍯","🍌","👅","🦸","🦹","🧛","🧘","🦎","🍉","🦓","🐥","🍁"]
     }
 ]
+
