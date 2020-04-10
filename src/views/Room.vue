@@ -60,10 +60,10 @@
                     </div>
                 </b-col>
             </b-row>
-            <b-row v-if="audience.length > 0">
+            <hr>
+            <b-row >
                 <b-col>
                     <h5 class="pointer" @click="update({player:{team:'audience'}})"> Audience </h5>
-                    <hr>
                     <div v-for="player in audience" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
@@ -108,7 +108,15 @@
                                 class="square"
                                 :class="tileClass(board.state[i][j], board.owner[i][j])"
                             >
-                                <span class="word">{{ col }}</span>
+                                <!-- TODO: clean this logic up? -->
+                                <span 
+                                    v-if="col.includes(stylingSeparator)" 
+                                    :class="col.split(stylingSeparator).slice(0)[0]" 
+                                    class="word"
+                                >
+                                    {{ col.split(stylingSeparator).slice(-1)[0] }}
+                                </span>
+                                <span v-else class="word">{{ col }}</span>
                             </div>
                     </b-col>
                 </b-row>
@@ -151,9 +159,11 @@
                     <b-form-checkbox-group
                         v-model="selectedWordPacks"
                         :options="wordPacks"
-                        :stacked="false"
-                        buttons
+                        :stacked="true"
+                        switches
+                        size="lg"
                         button-variant="light"
+                        class="switches"
                     ></b-form-checkbox-group>
                 </b-col>
             </b-row>
@@ -222,6 +232,7 @@
                words: [],
                selectedWordPacks: ['basic'],
                masterWordPacks: require('../static/words.json'),
+               stylingSeparator: '|'
             }
         },
         created(){
@@ -233,17 +244,20 @@
         async mounted() {
             this.words = this.masterWordPacks.find(m=>m.key==='basic').wordList;
             this.room = this.$route.params.room;
+            this.injectStyles();
             await this.getUser();
             await this.initRoom();
+
         },
         computed: {
             wordPacks(){
                 return this.masterWordPacks
                     .filter(p=>!p.disabled)
                     .map(p=>{ 
-                        return {text: p.title, value: p.key}
+                        return {text: `${p.title} (${p.wordList.length})`, value: p.key}
                 });
             },
+
             blueTeam(){
                 return this.players.filter(p=>p.team == 'blue');
             },
@@ -541,13 +555,30 @@
                 this.info = snapshot.data();
                 this.updateBoard(this.info);
             },
+            injectStyles(){
+                const style = document.createElement("style");
+                style.appendChild(document.createTextNode(""));
+                document.head.appendChild(style);
+                const styleSheet = style.sheet;
+                for (let i=0; i<this.masterWordPacks.length; i++){
+                    const wordPack = this.masterWordPacks[i];
+                    if (wordPack.styles)
+                    styleSheet.insertRule(`.${wordPack.key}{${wordPack.styles}}`);
+                }
+            },
         },
         watch: {
             selectedWordPacks(n){
-                if (n && n.length > 0)
-                    this.words = [...new Set(n.map(s=>this.masterWordPacks.find(w=>w.key===s).wordList).flat())];
-                else 
+                this.words = [];
+                if (n && n.length > 0){
+                    for (let i=0; i<n.length; i++){
+                        const wordPack = this.masterWordPacks.find(w=>w.key===n[i]);
+                        this.words = this.words.concat(wordPack.wordList.map(word=>`${wordPack.key}${this.stylingSeparator}${word}`));
+                    }
+                }
+                else{ 
                     this.words = this.masterWordPacks.find(w=>w.key==='basic').wordList;
+                }
             },
             timer(n, o){
                 if (n != o){
@@ -682,5 +713,12 @@
         left: 25% !important;
         right: 25% !important;
         width: 50% !important;
+    }
+    .switches {
+        text-align: left;
+    }
+    .custom-control-input:checked~.custom-control-label::before {
+        border-color: black !important;
+        background-color: black !important;
     }
 </style>
