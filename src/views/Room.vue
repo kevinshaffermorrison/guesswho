@@ -4,9 +4,9 @@
         {{ result.message }}
     </h5>
     <b-row>
-        <b-col cols="2">
+        <b-col sm="2">
             <h2 :class="`${turn}-team`" class="header">
-                {{turn}}'s turn
+                {{turn}}'s turn <template v-if="clock">[{{clock}}]</template>
             </h2>
 
             <hr>
@@ -79,12 +79,13 @@
             <hr>
             <b-button variant="dark" @click="update({removePlayer: true})">Leave Game</b-button>
             <b-button variant="danger" @click="update({newGame: true})">New Game</b-button>
+            <hr>
         </b-col>
 
-        <b-col cols="8">
+        <b-col sm="8">
             <div class="board">
                 <b-row v-for="(row,i) in board.values" :key="i">
-                    <b-col xl v-for="(col,j) in row" :key="`${i}${j}`">
+                    <b-col sm v-for="(col,j) in row" :key="`${i}${j}`">
                             <div
                                 @click="update({click: {i,j}})"
                                 class="square"
@@ -101,8 +102,9 @@
                 :variant="turn == 'red' ? 'outline-danger':'outline-primary'"  
                 @click="update({endTurn:true})"
             >End Turn</b-button>
+            <hr>
         </b-col>
-        <b-col cols="2">
+        <b-col sm="2">
             <b-row>
                 <b-col>
                     <h4>Timer</h4>
@@ -111,7 +113,7 @@
                         <span v-if="clock" :class="`${turn}-team`">
                             {{ clock }} seconds remaining
                         </span>
-                        <b-form-input @mouseup="setTimer(timerInput)" id="timerInput" v-model="timerInput" type="range" min="30" max="300" step="30"></b-form-input>
+                        <b-form-input @touchend="setTimer(timerInput)" @mouseup="setTimer(timerInput)" id="timerInput" v-model="timerInput" type="range" min="30" max="300" step="30"></b-form-input>
                         <div class="mt-2">Round Timer: {{ timerInput/60 }} minutes</div>
                         <br>
                     </template>
@@ -122,6 +124,7 @@
             <hr>
             <h4> Notes </h4>
             <b-textarea placeholder="Take some notes! But remember, these disappear when you refresh the page!" class="notes"></b-textarea>
+            <hr>
         </b-col>
     </b-row>
 
@@ -256,31 +259,31 @@
                         click = false;
                     }
                     else {
-                        console.log(`Clicked: ${click.i}, ${click.j}`);
+                        // console.log(`Clicked: ${this.board.values[click.i][click.j]} (${click.i},${click.j})`);
                         const result = this.selected(click.i, click.j);
                         if (result){
-                            console.log('Game Over');
+                            // console.log('Game Over');
                             this.gameOver(result);
                         }
                     }
                 }
                 if (player){
-                    console.log(`Updating Player`);
+                    // console.log(`Updating Player`);
                     this.updatePlayer(player);
                 }
                 if (newPlayer){
-                    console.log('New Player');
+                    // console.log('New Player');
                     this.newPlayer();
                 }
                 if (removePlayer){
-                    console.log('Remove Player');
+                    // console.log('Remove Player');
                     this.removePlayer();
                     await this.updateRemoteRoom();
                     this.$router.push({name: 'Home'});
                     return;
                 }
                 if (newGame){
-                    console.log('New Game');
+                    // console.log('New Game');
                     this.newGame();
                     this.resetTimer(this.timer);
                 }
@@ -288,7 +291,7 @@
                     this.turn = this.getOtherTeam(this.turn);
                 }
                 if (click || player || newGame || newPlayer || endTurn){
-                    console.log('Updating Remote Room');
+                    // console.log('Updating Remote Room');
                     await this.updateRemoteRoom();
                 }
             },
