@@ -13,10 +13,10 @@
                 <form @submit.prevent="login" class="text-center">
                 <div class="form-group">
                     <label for="name">Your Name</label>
-                    <input type="text" class="form-control" placeholder="Please enter your name..." name="name" v-model="name">
+                    <input @focus="$event.target.select()" type="text" class="form-control" placeholder="Please enter your name..." name="name" v-model="name">
                     <br>
-                    <label for="room">Room Name</label>
-                    <input type="text" class="form-control" placeholder="Please room name..." name="room" v-model="room">
+                    <label  for="room">Room Name</label>
+                    <input @focus="$event.target.select()" type="text" class="form-control" placeholder="Please room name..." name="room" v-model="room">
                     <p v-if="errorText" class="text-danger">{{ errorText }}</p>
                 </div>
                 <button class="btn btn-primary">Enter Room</button>
