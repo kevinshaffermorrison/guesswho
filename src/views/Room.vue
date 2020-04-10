@@ -94,9 +94,8 @@
                     </b-button>
                 </b-col>
             </b-row>
-            <br>
-            <b-button variant="dark" @click="update({removePlayer: true})">Leave Game</b-button>
-            <b-button variant="danger" @click="update({newGame: true})">New Game</b-button>
+            <hr>
+            <b-button class="mt-2" variant="danger" @click="update({newGame: true})">New Game</b-button>
         </b-col>
 
         <b-col sm="8">
@@ -152,12 +151,14 @@
                     <b-form-checkbox-group
                         v-model="selectedWordPacks"
                         :options="wordPacks"
-                        stacked
+                        :stacked="false"
                         buttons
                         button-variant="light"
                     ></b-form-checkbox-group>
                 </b-col>
             </b-row>
+            <hr>
+            <b-button class="mt-2" variant="dark" @click="update({removePlayer: true})">Leave Game</b-button>
         </b-col>
     </b-row>
 
@@ -560,7 +561,7 @@
         margin: 12px;
     }
     .notes {
-        height: 40% !important;
+        min-height: 35% !important;
     }
     .header::first-letter{
         text-transform: uppercase;
