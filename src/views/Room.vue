@@ -115,7 +115,7 @@
                 </b-row>
             </div>
             <b-button 
-                v-if="myTeam == turn || clock == null"
+                v-if="myTeam == turn || (timer && clock == 'Time\'s Up!')"
                 block
                 :variant="turn == 'red' ? 'outline-danger':'outline-primary'"  
                 @click="update({endTurn:true})"
