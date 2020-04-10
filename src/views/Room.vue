@@ -295,7 +295,6 @@
                 endTurn=null,
                 removePlayer=null,
             }){
-                console.log('update');
                 if (click){
 
                     if (this.turn != this.myTeam || this.result.winner || this.myRole == 'spyMaster'){
