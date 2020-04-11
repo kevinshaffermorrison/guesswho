@@ -46,7 +46,7 @@
                 <b-col class="red-team">
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'red'})"> Red </h5>
                     <hr>
-                    <div class="pointer" v-for="player in redTeam" :key="player.id">
+                    <div v-for="player in redTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span 
                             class="player" 
@@ -59,7 +59,7 @@
                 <b-col class="blue-team">
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'blue'})"> Blue </h5>
                     <hr>
-                    <div class="pointer" v-for="player in blueTeam" :key="player.id">
+                    <div v-for="player in blueTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span 
                             class="player" 
@@ -74,7 +74,7 @@
             <b-row >
                 <b-col>
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'audience'})"> Audience </h5>
-                    <div class="pointer" v-for="player in audience" :key="player.id">
+                    <div v-for="player in audience" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span 
                             class="player" 
