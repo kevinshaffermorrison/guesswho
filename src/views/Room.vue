@@ -8,8 +8,8 @@
         show
         > <a href="https://www.paypal.me/KevinShaffer" target="_blank" style="color:gray">Donate to help with hosting</a>
     </b-alert> -->
-    <h5 class="header" v-if="result.winner">
-        {{ result.message }}
+    <h5 class="header" v-if="winner">
+        {{ winner }} wins!
     </h5>
     <b-row>
         <b-col>
@@ -44,29 +44,35 @@
             <h3> Players </h3>
             <b-row>
                 <b-col class="red-team">
-                    <h5 class="pointer" @click="update({player:{team:'red'}})"> Red </h5>
+                    <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'red'})"> Red </h5>
                     <hr>
                     <div v-for="player in redTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
+                        <span @mouseover="showRemove(player.id)" @mouseleave="hideRemove(player.id)" class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}
+                            <span @click="remoteRemovePlayer({id: player.id})" class="pointer" hidden :id="`player-${player.id}`">(x)</span>
+                        </span>
                     </div>
                 </b-col>
                 <b-col class="blue-team">
-                    <h5 class="pointer" @click="update({player:{team:'blue'}})"> Blue </h5>
+                    <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'blue'})"> Blue </h5>
                     <hr>
                     <div v-for="player in blueTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
+                        <span @mouseover="showRemove(player.id)" @mouseleave="hideRemove(player.id)" class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}
+                            <span @click="remoteRemovePlayer({id: player.id})" class="pointer" hidden :id="`player-${player.id}`">(x)</span>
+                        </span>
                     </div>
                 </b-col>
             </b-row>
             <hr>
             <b-row >
                 <b-col>
-                    <h5 class="pointer" @click="update({player:{team:'audience'}})"> Audience </h5>
+                    <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'audience'})"> Audience </h5>
                     <div v-for="player in audience" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <span class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}</span>
+                        <span @mouseover="showRemove(player.id)" @mouseleave="hideRemove(player.id)" class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}
+                            <span @click="remoteRemovePlayer({id: player.id})" class="pointer" hidden :id="`player-${player.id}`">(x)</span>
+                        </span>
                     </div>
                 </b-col>
             </b-row>
@@ -76,7 +82,7 @@
             <b-row>
                 <b-col>
                     <label for="myName">Update Your Name:</label>
-                    <input @change="update({player: {name: myName}})" type="text" class="form-control" name="myName" v-model="myName">
+                    <input @change="remoteUpdatePlayer({id: myPlayerId, name:initName})" type="text" class="form-control" name="initName" v-model="initName">
                 </b-col>
             </b-row>
             <br>
@@ -84,18 +90,18 @@
                 <b-col>
                     <b-button 
                         :variant="myRole=='spyMaster' ? 'dark' : 'outline-dark'" 
-                        @click="update({player:{role:'spyMaster'}})"
+                        @click="remoteUpdatePlayer({id: myPlayerId, role:'spyMaster'})"
                     >Spy Master
                     </b-button>
                     <b-button 
                         :variant="myRole=='spyMaster' ? 'outline-dark' : 'dark'" 
-                        @click="update({player:{role:'peasant'}})"
+                        @click="remoteUpdatePlayer({id: myPlayerId, role:'peasant'})"
                     >Peasant
                     </b-button>
                 </b-col>
             </b-row>
             <hr>
-            <b-button class="mt-2" variant="danger" @click="update({newGame: true})">New Game</b-button>
+            <b-button class="mt-2" variant="danger" @click="newGame()">New Game</b-button>
         </b-col>
 
         <b-col sm="8">
@@ -104,7 +110,7 @@
                 <b-row v-for="(row,i) in board.values" :key="i">
                     <b-col sm v-for="(col,j) in row" :key="`${i}${j}`">
                             <div
-                                @click="update({click: {i,j}})"
+                                @click="selectSquare(i,j)"
                                 class="square"
                                 :class="tileClass(board.state[i][j], board.owner[i][j])"
                             >
@@ -125,7 +131,7 @@
                 v-if="myTeam == turn || (timer && clock == 'Time\'s Up!')"
                 block
                 :variant="turn == 'red' ? 'outline-danger':'outline-primary'"  
-                @click="update({endTurn:true})"
+                @click="endTurn"
             >End Turn</b-button>
         </b-col>
         <b-col sm="2">
@@ -168,14 +174,14 @@
                 </b-col>
             </b-row>
             <hr>
-            <b-button class="mt-2" variant="dark" @click="update({removePlayer: true})">Leave Game</b-button>
+            <b-button class="mt-2" variant="dark" @click="remoteRemovePlayer({id: myPlayerId})">Leave Game</b-button>
         </b-col>
     </b-row>
 
-    <div v-if="!myName" class="overlay">
+    <div v-if="!myName && !localName" class="overlay">
         <h1>Enter your name </h1>
         <input 
-            @change="update({player: {name: initName}})"
+            @change="remoteUpdatePlayer({id: myPlayerId, name: initName})"
             type="text" 
             class="form-control init-name" 
             placeholder="Type your name and press enter" 
@@ -183,11 +189,17 @@
             v-model="initName"
         >
     </div>
-    <div @click="result.winner = null" v-if="result.winner">
+    <div @click="winner = null" v-if="winner">
         <div class="overlay">
-            <h1 :class="`${result.winner}-team header`">{{ result.message }}</h1>
+            <h1 :class="`${winner}-team header`">
+                {{winner}} team wins!
+            </h1>
+            <h3 class="assassinated" v-if="assassin">
+                <br>
+                The assassin killed the {{getOtherTeam(winner)}} team...
+            </h3>
         <br>
-        <h4 class="pointer" @click="update({newGame: true})">New Game? </h4>
+        <h4 class="pointer" @click="newGame">New Game? </h4>
         </div>
     </div>
   </div>
@@ -195,19 +207,29 @@
 </template>
 
 <script>
+/*
+    TODO:
+        1. Do updates only of the thing that changed, not the whole doc
+        2. Do these in transactions
+        3. Only have the updates happen with responses from the snapshot
+        4. allow for users to kick out other users.
+*/
     import fb from '@/firebase/init';
-    const shuffle = require('lodash.shuffle');
     import { v4 as uuidv4 } from 'uuid';
     import functions from '../mixins/functions';
+    import database from '../mixins/database';
+    import helpers from '../mixins/helpers';
+    const wordList = require('../static/words');
 
     export default {
-        mixins: [functions],
+        mixins: [functions,database,helpers],
         name: 'Room',
         data() {
             return{
                room: null,
-               myName: null,
+            //    myName: null,
                myPlayerId: null,
+               docRef: null,
                players: [],
                board: {
                    values: [],
@@ -217,19 +239,17 @@
                score: {},
                turn: null,
                assassin: false,
-               result: {
-                   "message": null,
-                   "winner": null,
-               },
+               winner: null,
                teams: ['red','blue'],
                initName: null,
+               localName: null,
                clockInterval: null,
                clock: null,
                timer: null,
                timerInput: 180,
                timerOn: false,
                timesUp: false,
-               words: [],
+               words: wordList.find(m=>m.key==='basic').wordList,
                selectedWordPacks: ['basic'],
                masterWordPacks: require('../static/words.json'),
                stylingSeparator: '|'
@@ -237,17 +257,48 @@
         },
         created(){
             window.addEventListener('beforeunload', () => {
-                this.removePlayer();
-                this.updateRemoteRoom();
+                this.remoteRemovePlayer({id: this.myPlayerId});
+                // this.updateRemoteRoom();
             }, false)
         },
         async mounted() {
             this.words = this.masterWordPacks.find(m=>m.key==='basic').wordList;
             this.room = this.$route.params.room;
             this.injectStyles();
-            await this.getUser();
+            await this.initUser();
             await this.initRoom();
 
+        },
+        watch: {
+            myName(n){
+                if (n)
+                    this.setUser();
+            },
+            selectedWordPacks(n){
+                this.words = [];
+                if (n && n.length > 0){
+                    for (let i=0; i<n.length; i++){
+                        const wordPack = this.masterWordPacks.find(w=>w.key===n[i]);
+                        this.words = this.words.concat(wordPack.wordList.map(word=>`${wordPack.key}${this.stylingSeparator}${word}`));
+                    }
+                }
+                else{ 
+                    this.words = this.masterWordPacks.find(w=>w.key==='basic').wordList;
+                }
+            },
+            timer(n, o){
+                if (n != o){
+                    this.resetTimer(this.timer);
+                }
+                if (!n){
+                    this.timerOn = false;
+                }
+            },
+            turn(n, o){
+                if (n != o){
+                    this.resetTimer(this.timer);
+                }
+            }
         },
         computed: {
             wordPacks(){
@@ -257,7 +308,6 @@
                         return {text: `${p.title} (${p.wordList.length})`, value: p.key}
                 });
             },
-
             blueTeam(){
                 return this.players.filter(p=>p.team == 'blue');
             },
@@ -275,26 +325,44 @@
                 const player = this.players.find(p=>p.id === this.myPlayerId) || {};
                 return player.role;
             },
+            myPlayer(){
+                const player = this.players.find(p=>p.id === this.myPlayerId) || {};
+                return player;
+            },
+            myName(){
+                const player = this.players.find(p=>p.id === this.myPlayerId) || {};
+                return player.name;
+            },
+            otherTeam(){
+                return this.getOtherTeam(this.turn);
+            },
         },
         methods: {
-            async getUser(){
-                const name = this.$route.params.name || localStorage.getItem('name');
+            initUser(){
+                this.getUser();
+            },
+            getUser(){
                 const id = localStorage.getItem('id');
-                if(name && id){
-                    this.myName = name;
+                if(id){
                     this.myPlayerId = id;
+                    this.localName = localStorage.getItem('name') || null;
                 }
                 else {
-                    await this.setUser();
+                    this.setUser();
                 }
             },
-            async setUser(){
+            showRemove(id){
+                document.getElementById(`player-${id}`).hidden = false;
+            },
+            hideRemove(id){
+                document.getElementById(`player-${id}`).hidden = true;
+            },
+            setUser(){
                 this.myPlayerId = this.myPlayerId || uuidv4();
-                this.myName = this.myName || this.$route.params.name;
-                if (this.myName){
-                    localStorage.setItem('name', this.myName);
+                if (this.myPlayerId){
                     localStorage.setItem('id', this.myPlayerId);
                 }
+                localStorage.setItem('name', this.myName);
             },
             tileClass(state, owner){
                 if (this.myRole == 'spyMaster' || state == 'selected'){
@@ -303,182 +371,6 @@
                 else if (state == 'unselected'){
                     return 'unknown';
                 }
-
-            },
-            async update({
-                click= null,
-                player=null,
-                newGame=null,
-                newPlayer=null,
-                endTurn=null,
-                removePlayer=null,
-            }){
-                if (click){
-
-                    if (this.turn != this.myTeam || this.result.winner || this.myRole == 'spyMaster'){
-                        click = false;
-                    }
-                    else {
-                        // console.log(`Clicked: ${this.board.values[click.i][click.j]} (${click.i},${click.j})`);
-                        const result = this.selected(click.i, click.j);
-                        if (result){
-                            // console.log('Game Over');
-                            this.gameOver(result);
-                        }
-                    }
-                }
-                if (player){
-                    // console.log(`Updating Player`);
-                    this.updatePlayer(player);
-                }
-                if (newPlayer){
-                    // console.log('New Player');
-                    this.newPlayer();
-                }
-                if (removePlayer){
-                    // console.log('Remove Player');
-                    this.removePlayer();
-                    await this.updateRemoteRoom();
-                    this.$router.push({name: 'Home'});
-                    return;
-                }
-                if (newGame){
-                    // console.log('New Game');
-                    this.newGame();
-                    this.resetTimer(this.timer);
-                }
-                if (endTurn){
-                    this.turn = this.getOtherTeam(this.turn);
-                }
-                if (click || player || newGame || newPlayer || endTurn){
-                    // console.log('Updating Remote Room');
-                    await this.updateRemoteRoom();
-                }
-            },
-            selected(i,j){
-                if (this.turn != this.myTeam || this.result.winner || this.myRole == 'spyMaster'){
-                    return;
-                }
-                if (this.board.state[i][j] == 'unselected'){
-                    this.$set(this.board.state[i], j, 'selected');
-                    const owner = this.board.owner[i][j];
-                    if (owner == 'assassin'){
-                        this.assassin = true;
-                    }
-                    else if (owner == 'neutral'){
-                        this.turn = this.getOtherTeam(this.turn);// == 'blue' ? 'red' : 'blue';
-                    }
-                    else if (owner != this.turn){
-                        this.turn = this.getOtherTeam(this.turn);//this.turn == 'blue' ? 'red' : 'blue';
-                    }
-                    return this.updateScore();
-                }
-            },
-            getOtherTeam(team){
-                return this.teams.find(t=>t != team);
-            },
-            gameOver(cause){
-                let winner = this.turn;
-                if (cause === 'assassin'){
-                    winner = this.getOtherTeam(this.turn);// == 'blue' ? 'red' : 'blue';
-                }
-                this.result = {
-                        winner: winner,
-                        message: `${winner} team wins!`
-                }
-            },
-            updateScore(){
-                if (this.assassin){
-                    return 'assassin';
-                }
-                this.score = {
-                    red: 0,
-                    blue: 0
-                };
-                for (let i=0; i<this.board.state.length; i++){
-                    for (let j=0; j<this.board.state[0].length; j++){
-                        const team = this.board.owner[i][j];
-                        const state = this.board.state[i][j];
-                        if (state == 'unselected'){
-                            if (this.score[team]){
-                                this.score[team] += 1
-                            }
-                            else {
-                                this.score[team] = 1
-                            }
-                        }
-                    }
-                }
-                if (this.score.red === 0){
-                    return 'red';
-                }
-                if (this.score.blue === 0){
-                    return 'blue';
-                }
-            },
-            updatePlayer({role=null, team=null, name=null}){
-                const me = this.players.findIndex(f=>f.id === this.myPlayerId);
-                if (role && role != this.myRole){
-                    this.players[me].role = role;
-                }
-                if (team && team != this.myTeam){
-                    this.players[me].team = team;
-                }
-                if (name){
-                    this.players[me].name = name;
-                    this.myName = name;
-                    this.setUser();
-                }
-            },
-            newPlayer(){
-                this.players.push({
-                    name: this.myName,
-                    id: this.myPlayerId,
-                    role: 'peasant',
-                    team: null,
-                });
-            },
-            removePlayer(){
-                this.players = this.players.filter(p=>p.id != this.myPlayerId);
-            },
-            newGame(){
-                this.players = this.players.map(p=>{
-                    p.role='peasant';
-                    return p;
-                });
-                this.result = {
-                   message: null,
-                   winner: null,
-                };
-                this.assassin = false;
-                this.randomizeBoard();
-            },
-            randomizeBoard(){
-                const words = shuffle(this.words).slice(0,25);
-                const teams = shuffle(['red','blue']);
-                let owner = [], values = [];
-                const items = shuffle([].concat(
-                        Array(9).fill(teams[0]),
-                        Array(8).fill(teams[1]),
-                        Array(7).fill('neutral'),
-                        Array(1).fill('assassin')
-                ));
-                while(items.length) owner.push(items.splice(0,5));
-                while(words.length) values.push(words.splice(0,5));
-                const board = {
-                    // eslint-disable-next-line no-unused-vars
-                    values: values,  
-                    // eslint-disable-next-line no-unused-vars
-                    state: [...Array(5)].map(x=>Array(5).fill('unselected')),
-                    // eslint-disable-next-line no-unused-vars
-                    owner: owner,
-                }
-                this.score = {
-                    [teams[0]]: 9,
-                    [teams[1]]: 8
-                };
-                this.board = board;
-                this.turn = teams[0];
             },
             activateTimer(activate, sendToRemote=true){
                 this.timerOn = activate;
@@ -507,53 +399,81 @@
                 };
                 await fb.collection('rooms').doc(this.room).update(data);
             },
-            async updateRemoteRoom(){
-                const data = {
-                    board: JSON.stringify(this.board),
-                    players: this.players,
-                    assassin: this.assassin,
-                    turn: this.turn,
-                    result: this.result,
-                    lastUpdated: new Date().toISOString(),
-                };
-                await fb.collection('rooms').doc(this.room).set(data);
-            },
             async initRoom(){
                 let ref = fb.collection('rooms').doc(this.room);
+                this.docRef = ref;
                 const room = await ref.get();
                 let currentData = room.data();
                 // if room doesn't exist, or last activity was more than 12 hours ago.
                 if (!room.exists || new Date() - new Date(currentData.lastUpdated) > 4.32e+7){
-                    await this.update({newGame: true, newPlayer: true});
+                    await this.clearRoom();
+                    this.newGame();
                 }
                 else {
-                    this.updateBoard(currentData);
-                    const myPlayerIdx = currentData.players.findIndex(p=>p.id===this.myPlayerId);
-                    if (myPlayerIdx === -1){
-                        await this.update({newPlayer: true});
-                    }
+                    this.update(currentData);
                 }
+                this.remoteUpdatePlayer({
+                    name: this.$route.params.name || this.localName || this.myName || null,
+                    id: this.myPlayerId,
+                    role: 'peasant',
+                    team: null,
+                });
                 ref.onSnapshot(this.tick);
             },
-            updateBoard(data){
-                this.board = JSON.parse(data.board);
-                this.players = data.players;
-                this.assassin = data.assassin;
-                this.turn = data.turn;
-                this.result = data.result;
+            tick(snapshot){
+                const data = snapshot.data();
+                this.update(data);
+            },
+            update(data){
+                this.updateTurn(data.turn);
+                this.updateBoard(data.board);
+                this.updateScore(data.score);
+                this.updatePlayers(data.players);
+                this.updateWinner(data.winner);
+                this.updateAssassin(data.assassin);
+                this.updateTimer(data.timer);
+
+            },
+            // newGame() is in helpers.js
+            endTurn(){
+                this.remoteChangeTurn({currentTurn: this.turn});
+            },
+            // Methods to call on tick
+            updateTurn(turn){
+                this.turn = turn;
+            },
+            updateBoard(board){
+                if (board)
+                this.board = JSON.parse(board);
+            },
+            updateScore(score){
+                if (score)
+                this.score = score ;
+            },
+            updatePlayers(players){
+                if (players)
+                this.players = players;
+            },
+            updateWinner(winner){
+                this.winner = winner;
+            },
+            updateAssassin(assassin){
+                this.assassin = assassin;
+            },
+            updateTimer(timer){
                 const timerBefore = this.timer;
-                this.timer = data.timer === 'off' ? null : (data.timer ||  this.timer);
+                this.timer = timer === 'off' ? null : (timer ||  this.timer);
                 if (this.timer != timerBefore){
                     this.activateTimer(true, false);
                 }
-                const result = this.updateScore();
-                if (result){
-                    this.gameOver(result);
-                }
             },
-            async tick(snapshot){
-                this.info = snapshot.data();
-                this.updateBoard(this.info);
+            selectSquare(i,j){
+                if (this.turn != this.myTeam || this.winner || this.myRole == 'spyMaster'){
+                    return;
+                }
+                else {
+                    this.remoteUpdateBoard(i, j);
+                }
             },
             injectStyles(){
                 const style = document.createElement("style");
@@ -567,33 +487,6 @@
                 }
             },
         },
-        watch: {
-            selectedWordPacks(n){
-                this.words = [];
-                if (n && n.length > 0){
-                    for (let i=0; i<n.length; i++){
-                        const wordPack = this.masterWordPacks.find(w=>w.key===n[i]);
-                        this.words = this.words.concat(wordPack.wordList.map(word=>`${wordPack.key}${this.stylingSeparator}${word}`));
-                    }
-                }
-                else{ 
-                    this.words = this.masterWordPacks.find(w=>w.key==='basic').wordList;
-                }
-            },
-            timer(n, o){
-                if (n != o){
-                    this.resetTimer(this.timer);
-                }
-                if (!n){
-                    this.timerOn = false;
-                }
-            },
-            turn(n, o){
-                if (n != o){
-                    this.resetTimer(this.timer);
-                }
-            }
-        },
     }
 </script>
 <style>
@@ -605,6 +498,9 @@
     }
     .header::first-letter{
         text-transform: uppercase;
+    }
+    .assassinated {
+        color: gray;
     }
 
     .overlay {
