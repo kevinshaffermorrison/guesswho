@@ -46,20 +46,30 @@
                 <b-col class="red-team">
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'red'})"> Red </h5>
                     <hr>
-                    <div v-for="player in redTeam" :key="player.id">
+                    <div class="pointer" v-for="player in redTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <span @mouseover="showRemove(player.id)" @mouseleave="hideRemove(player.id)" class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}
-                            <span @click="remoteRemovePlayer({id: player.id})" class="pointer" hidden :id="`player-${player.id}`">(x)</span>
+                        <span 
+                            title="Click to remove player" 
+                            @click="remoteRemovePlayer({id: player.id})" 
+                            class="player" 
+                            :class="player.id === myPlayerId ? 'me' : ''"
+                        >
+                            {{player.name}}
                         </span>
                     </div>
                 </b-col>
                 <b-col class="blue-team">
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'blue'})"> Blue </h5>
                     <hr>
-                    <div v-for="player in blueTeam" :key="player.id">
+                    <div class="pointer" v-for="player in blueTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <span @mouseover="showRemove(player.id)" @mouseleave="hideRemove(player.id)" class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}
-                            <span @click="remoteRemovePlayer({id: player.id})" class="pointer" hidden :id="`player-${player.id}`">(x)</span>
+                        <span 
+                            title="Click to remove player" 
+                            @click="remoteRemovePlayer({id: player.id})" 
+                            class="player" 
+                            :class="player.id === myPlayerId ? 'me' : ''"
+                        >
+                            {{player.name}}
                         </span>
                     </div>
                 </b-col>
@@ -68,10 +78,15 @@
             <b-row >
                 <b-col>
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'audience'})"> Audience </h5>
-                    <div v-for="player in audience" :key="player.id">
+                    <div class="pointer" v-for="player in audience" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
-                        <span @mouseover="showRemove(player.id)" @mouseleave="hideRemove(player.id)" class="player" :class="player.id === myPlayerId ? 'me' : ''">{{player.name}}
-                            <span @click="remoteRemovePlayer({id: player.id})" class="pointer" hidden :id="`player-${player.id}`">(x)</span>
+                        <span 
+                            title="Click to remove player" 
+                            @click="remoteRemovePlayer({id: player.id})" 
+                            class="player" 
+                            :class="player.id === myPlayerId ? 'me' : ''"
+                        >
+                            {{player.name}}
                         </span>
                     </div>
                 </b-col>
@@ -350,12 +365,6 @@
                 else {
                     this.setUser();
                 }
-            },
-            showRemove(id){
-                document.getElementById(`player-${id}`).hidden = false;
-            },
-            hideRemove(id){
-                document.getElementById(`player-${id}`).hidden = true;
             },
             setUser(){
                 this.myPlayerId = this.myPlayerId || uuidv4();
