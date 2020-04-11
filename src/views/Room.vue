@@ -49,8 +49,6 @@
                     <div class="pointer" v-for="player in redTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span 
-                            title="Click to remove player" 
-                            @click="remoteRemovePlayer({id: player.id})" 
                             class="player" 
                             :class="player.id === myPlayerId ? 'me' : ''"
                         >
@@ -64,8 +62,6 @@
                     <div class="pointer" v-for="player in blueTeam" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span 
-                            title="Click to remove player" 
-                            @click="remoteRemovePlayer({id: player.id})" 
                             class="player" 
                             :class="player.id === myPlayerId ? 'me' : ''"
                         >
@@ -81,8 +77,6 @@
                     <div class="pointer" v-for="player in audience" :key="player.id">
                         <font-awesome-icon v-if="player.role=='spyMaster'" icon="user-secret" />&nbsp;
                         <span 
-                            title="Click to remove player" 
-                            @click="remoteRemovePlayer({id: player.id})" 
                             class="player" 
                             :class="player.id === myPlayerId ? 'me' : ''"
                         >
