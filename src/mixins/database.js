@@ -1,40 +1,25 @@
+import fb from '@/firebase/init';
+
 export default {
     methods: {
         async clearRoom(){
             await this.docRef.set({lastUpdated: new Date().toISOString()});
         },
         remoteUpdatePlayer({id, name=null, team=null, role=null}){
-            this.docRef.get().then(data=>{
-                const players = data.data().players || [];
-                const playerIdx = players.findIndex(f=>f.id === id);
-                if (playerIdx == -1){
-                    players.push({
-                        id, name, team, role
-                    });
-                }
-                else {
-                    if (name) players[playerIdx].name = name;
-                    if (team) players[playerIdx].team = team;
-                    if (role) players[playerIdx].role = role;
-                }
-                this.docRef.update({players, lastUpdated: new Date().toISOString()});
+            this.playerRef.doc(id).get().then(data=>{
+                const player = data.data() || {id};
+                if (name) player.name = name;
+                if (team) player.team = team;
+                if (role) player.role = role;
+                player.lastUpdated = new Date().toISOString();
+                this.playerRef.doc(id).set(player);
             }).catch((err) => {
                 console.log(err);
                 this.error = 'Could not update player';
             });
         },
         remoteRemovePlayer({id}){
-            this.docRef.get().then(data=>{
-                const players = data.data().players || [];
-                const playerIdx = players.findIndex(f=>f.id === id);
-                if (playerIdx != -1){
-                    players.pop(playerIdx);
-                    this.docRef.update({players, lastUpdated: new Date().toISOString()});
-                }
-            }).catch((err) => {
-                console.log(err);
-                this.error = 'Could not update player';
-            });
+            this.playerRef.doc(id).delete();
         },
         remoteChangeTurn({currentTurn}){
             this.docRef.get().then(data=>{
@@ -50,21 +35,25 @@ export default {
                 this.error = 'Could not change turn';
             });
         },
+        resetPlayerRoles(){
+            // might want to fetch all players from db first...
+            var batch = fb.batch();
+            for (let i=0; i<this.players.length; i++){
+                batch.update(this.playerRef.doc(this.players[i].id), {"role": "peasant"});
+            }
+            // Might want to error check here.
+            batch.commit();         
+        },
         remoteInitGame({board, score, turn}){
             this.docRef.get().then(data=>{
                 const roomData = data.data();
-                let players = roomData.players || [];
-                players = players.map(p=>{
-                    p.role='peasant';
-                    return p;
-                });
+                this.resetPlayerRoles();
                 const timer = roomData.timer || 'off';
 
                 this.docRef.update({
                     board: JSON.stringify(board), 
                     score, 
                     turn,
-                    players,
                     timer,
                     winner: null,
                     assassin: false,

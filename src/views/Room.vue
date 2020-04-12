@@ -236,9 +236,9 @@
         data() {
             return{
                room: null,
-            //    myName: null,
                myPlayerId: null,
                docRef: null,
+               playerRef: null,
                players: [],
                board: {
                    values: [],
@@ -261,7 +261,7 @@
                words: wordList.find(m=>m.key==='basic').wordList,
                selectedWordPacks: ['basic'],
                masterWordPacks: require('../static/words.json'),
-               stylingSeparator: '|'
+               stylingSeparator: '|',
             }
         },
         created(){
@@ -275,6 +275,7 @@
             this.room = this.$route.params.room;
             this.injectStyles();
             await this.initUser();
+            this.initPlayers();
             await this.initRoom();
 
         },
@@ -402,6 +403,30 @@
                 };
                 await fb.collection('rooms').doc(this.room).update(data);
             },
+            initPlayers(){
+                let ref = fb.collection('rooms').doc(this.room).collection('players');
+                this.playerRef = ref;
+                ref.onSnapshot(this.playersTick);
+            },
+            playersTick(snapshot){
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === "added") {
+                        const rec = change.doc.data();
+                        rec.docId = change.doc.id;
+                        this.players.push(rec);
+                    }
+                    if (change.type === "modified") {
+                        const rec = change.doc.data();
+                        const idx = this.players.findIndex(p=>p.id===rec.id);
+                        rec.docId = change.doc.id;
+                        this.$set(this.players, idx, rec);
+                    }
+                    if (change.type === "removed") {
+                        const idx = this.players.findIndex(p=>p.id===change.doc.data().id);
+                        this.players.splice(idx,1);
+                    }
+                });
+            },
             async initRoom(){
                 let ref = fb.collection('rooms').doc(this.room);
                 this.docRef = ref;
@@ -431,7 +456,6 @@
                 this.updateTurn(data.turn);
                 this.updateBoard(data.board);
                 this.updateScore(data.score);
-                this.updatePlayers(data.players);
                 this.updateWinner(data.winner);
                 this.updateAssassin(data.assassin);
                 this.updateTimer(data.timer);
@@ -452,10 +476,6 @@
             updateScore(score){
                 if (score)
                 this.score = score ;
-            },
-            updatePlayers(players){
-                if (players)
-                this.players = players;
             },
             updateWinner(winner){
                 this.winner = winner;
