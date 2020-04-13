@@ -115,17 +115,17 @@
                     <b-button 
                         :variant="myRole=='spyMaster' ? 'dark' : 'outline-dark'" 
                         @click="remoteUpdatePlayer({id: myPlayerId, role:'spyMaster'})"
-                    >Spy Master
+                    ><font-awesome-icon icon="user-secret" />&nbsp;Spy Master
                     </b-button>
                     <b-button 
                         :variant="myRole=='spyMaster' ? 'outline-dark' : 'dark'" 
                         @click="remoteUpdatePlayer({id: myPlayerId, role:'peasant'})"
-                    >Peasant
+                    ><font-awesome-icon icon="user" />&nbsp;Peasant
                     </b-button>
                 </b-col>
             </b-row>
             <hr>
-            <b-button class="mt-2" variant="danger" @click="newGame()">New Game</b-button>
+            <b-button class="mt-2" variant="danger" @click="newGame()"><font-awesome-icon icon="play-circle" />&nbsp;New Game</b-button>
         </b-col>
 
         <b-col sm="8">
@@ -198,7 +198,9 @@
                 </b-col>
             </b-row>
             <hr>
-            <b-button class="mt-2" variant="dark" @click="remoteRemovePlayer({id: myPlayerId})">Leave Game</b-button>
+            <b-button class="mt-2" variant="dark" @click="remoteRemovePlayer({id: myPlayerId})">
+                <font-awesome-icon icon="door-open" />&nbsp;Leave Game
+            </b-button>
         </b-col>
     </b-row>
 
