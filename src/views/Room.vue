@@ -55,6 +55,11 @@
                             {{player.name}}
                         </span>
                     </div>
+                    <div v-if="myTeam != 'red'">
+                        <i class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'red'})">
+                            <small>(Join Red)
+</small>                        </i>
+                    </div>
                 </b-col>
                 <b-col class="blue-team">
                     <h5 class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'blue'})"> Blue </h5>
@@ -67,6 +72,11 @@
                         >
                             {{player.name}}
                         </span>
+                    </div>
+                    <div v-if="myTeam != 'blue'">
+                        <i class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'blue'})">
+                            <small>(Join Blue)</small>
+                        </i>
                     </div>
                 </b-col>
             </b-row>
@@ -82,6 +92,11 @@
                         >
                             {{player.name}}
                         </span>
+                    </div>
+                    <div v-if="![null, undefined, 'audience'].includes(myTeam)">
+                        <i class="pointer" @click="remoteUpdatePlayer({id: myPlayerId, team:'audience'})">
+                            <small>(Join Audience)</small>
+                        </i>
                     </div>
                 </b-col>
             </b-row>
