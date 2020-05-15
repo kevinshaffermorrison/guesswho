@@ -1,6 +1,3 @@
-<!-- TODO
-    Store name is localStorage.
--->
 <template>
     <div id="nav">
       <h1>
@@ -44,8 +41,6 @@ export default {
     this.errorText = this.$route.params.message;
     this.room = await this.getRandomName({});
     this.name = await this.getRandomName({spaces:true});
-    // this.room = this.titleCase(roomName.replace('_',' ')).replace(' ','');
-    // this.name = this.titleCase(name.replace('_',' '));
   },
   methods: {
     login() {
