@@ -639,7 +639,7 @@
         color: black;
     }
     .selected {
-        opacity: .5;
+        opacity: .2;
     }
     .pointer {
         cursor: pointer;
