@@ -177,15 +177,17 @@
                 </b-col>
             </b-row>
             <hr>
-            <h4 :class="`${getOtherTeam(myTeam)}-team`" class="header">
-                {{getOtherTeam(myTeam)}}'s Target
-            </h4>
-                        <img 
+            <template v-if="['red','blue'].includes(myTeam)">
+                <h4  :class="`${getOtherTeam(myTeam)}-team`" class="header">
+                    {{getOtherTeam(myTeam)}}'s Target
+                </h4>
+                            <img 
 
-                class="word"
-                :src="`https://shaffer-morrison.com/guesswho/people/${target}.png`"
-            />
+                    class="word"
+                    :src="`https://shaffer-morrison.com/guesswho/people/${target}.png`"
+                />
             <hr>
+            </template>
             <!-- <b-row>
                 <b-col>
                 <h4>Word Packs <small>({{words.length}})</small></h4>
