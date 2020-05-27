@@ -44,50 +44,36 @@ export default {
             // Might want to error check here.
             batch.commit();         
         },
-        remoteInitGame({board, score, turn}){
+        remoteInitGame({board, redTarget, blueTarget, turn}){
             this.docRef.get().then(data=>{
                 const roomData = data.data();
                 this.resetPlayerRoles();
                 const timer = roomData.timer || 'off';
 
+                // eslint-disable-next-line no-unused-vars
                 this.docRef.update({
-                    board: JSON.stringify(board), 
-                    score, 
+                    blueBoard: JSON.stringify(board),
+                    redBoard: JSON.stringify(board),
+                    redTarget: redTarget,
+                    blueTarget: blueTarget,
                     turn,
                     timer,
                     winner: null,
-                    assassin: false,
                     lastUpdated: new Date().toISOString()
                 });
             })
         },
-        remoteUpdateBoard(i, j){
+        remoteUpdateBoard(team, i, j){
+            console.log(team, i, j);
             this.docRef.get().then(data=>{
-                let board = data.data().board;
-                board = board ? JSON.parse(board) : {state: [[]], owner: [['blue']]};
-                board.state[i][j] = 'selected';
-                const {score, winner} = this.getScore(board);
-                const owner = board.owner[i][j];
+                const gameData = data.data();
+                let board = (team === 'blue' ? gameData.blueBoard : gameData.redBoard);
+                board = board ? JSON.parse(board) : {state: [[]]};
+                board.state[i][j] = board.state[i][j]  === 'selected' ? 'unselected' : 'selected';
                 const payload = {
-                    board: JSON.stringify(board),
-                    winner: winner ? this.turn : winner,
-                    score,
+                    [`${team}Board`]: JSON.stringify(board),
                     lastUpdated: new Date().toISOString(),
                 };
-                switch(owner){
-                    case 'assassin':
-                        payload.assassin = true;
-                        payload.winner = this.getOtherTeam(this.turn);
-                        break;
-                    case 'neutral':
-                        payload.turn = this.getOtherTeam(this.turn);
-                        break;
-                    case this.turn:
-                        break;
-                    default:
-                        payload.turn = this.getOtherTeam(this.turn); 
-                        break;
-                }
                 this.docRef.update(payload);
             }).catch((err) => {
                 console.log(err);

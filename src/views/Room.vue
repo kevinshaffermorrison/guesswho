@@ -29,7 +29,7 @@
     <b-row>
         <b-col sm="2">
             <hr>
-            <h2> Score </h2>
+            <!-- <h2> Score </h2>
             <b-row>
                 <b-col>
                     <h5 class="red-team">Red: <span> {{score.red}}</span></h5>
@@ -39,7 +39,7 @@
                 </b-col>
             </b-row>
             
-            <hr>
+            <hr> -->
 
             <h3> Players </h3>
             <b-row>
@@ -109,7 +109,7 @@
                     <input @change="remoteUpdatePlayer({id: myPlayerId, name:initName})" type="text" class="form-control" name="initName" v-model="initName">
                 </b-col>
             </b-row>
-            <br>
+            <!-- <br>
             <b-row>
                 <b-col>
                     <b-button 
@@ -123,7 +123,7 @@
                     ><font-awesome-icon icon="user" />&nbsp;Peasant
                     </b-button>
                 </b-col>
-            </b-row>
+            </b-row> -->
             <hr>
             <b-button class="mt-2" variant="danger" @click="newGame()"><font-awesome-icon icon="play-circle" />&nbsp;New Game</b-button>
         </b-col>
@@ -136,17 +136,14 @@
                             <div
                                 @click="selectSquare(i,j)"
                                 class="square"
-                                :class="tileClass(board.state[i][j], board.owner[i][j])"
+                                :class="board.state[i][j]"
                             >
                                 <!-- TODO: clean this logic up? -->
-                                <span 
-                                    v-if="col.includes(stylingSeparator)" 
-                                    :class="col.split(stylingSeparator).slice(0)[0]" 
+                                <img 
+
                                     class="word"
-                                >
-                                    {{ col.split(stylingSeparator).slice(-1)[0] }}
-                                </span>
-                                <span v-else class="word">{{ col }}</span>
+                                    :src="`https://shaffer-morrison.com/guesswho/people/${col}.png`"
+                                />
                             </div>
                     </b-col>
                 </b-row>
@@ -180,10 +177,16 @@
                 </b-col>
             </b-row>
             <hr>
-            <h4> Notes </h4>
-            <b-textarea placeholder="Take some notes! But remember, these disappear when you refresh the page!" class="notes"></b-textarea>
+            <h4 :class="`${getOtherTeam(myTeam)}-team`" class="header">
+                {{getOtherTeam(myTeam)}}'s Target
+            </h4>
+                        <img 
+
+                class="word"
+                :src="`https://shaffer-morrison.com/guesswho/people/${target}.png`"
+            />
             <hr>
-            <b-row>
+            <!-- <b-row>
                 <b-col>
                 <h4>Word Packs <small>({{words.length}})</small></h4>
                     <b-form-checkbox-group
@@ -197,7 +200,7 @@
                     ></b-form-checkbox-group>
                 </b-col>
             </b-row>
-            <hr>
+            <hr> -->
             <b-button class="mt-2" variant="dark" @click="remoteRemovePlayer({id: myPlayerId})">
                 <font-awesome-icon icon="door-open" />&nbsp;Leave Game
             </b-button>
@@ -259,24 +262,24 @@
                players: [],
                board: {
                    values: [],
-                   state: [],
-                   owner: []
+                   state: []
                },
                score: {},
                turn: null,
-               assassin: false,
-               winner: null,
+               target: null,
                teams: ['red','blue'],
                initName: null,
                localName: null,
                clockInterval: null,
+               winner: null,
+               assassin: null,
                clock: null,
                timer: null,
                timerInput: 180,
                timerOn: false,
                timesUp: false,
-               words: wordList.find(m=>m.key==='basic').wordList,
-               selectedWordPacks: ['basic'],
+               words: wordList.find(m=>m.key==='people').wordList,
+               selectedWordPacks: ['people'],
                masterWordPacks: require('../static/words.json'),
                stylingSeparator: '|',
             }
@@ -288,7 +291,7 @@
             }, false)
         },
         async mounted() {
-            this.words = this.masterWordPacks.find(m=>m.key==='basic').wordList;
+            this.words = this.masterWordPacks.find(m=>m.key==='people').wordList;
             this.room = this.$route.params.room;
             this.injectStyles();
             await this.initUser();
@@ -310,7 +313,7 @@
                     }
                 }
                 else{ 
-                    this.words = this.masterWordPacks.find(w=>w.key==='basic').wordList;
+                    this.words = this.masterWordPacks.find(w=>w.key==='people').wordList;
                 }
             },
             timer(n, o){
@@ -385,9 +388,9 @@
                 }
                 localStorage.setItem('name', this.myName);
             },
-            tileClass(state, owner){
-                if (this.myRole == 'spyMaster' || state == 'selected'){
-                    return `${state} ${owner}`;
+            tileClass(state){
+                if (state == 'selected'){
+                    return state;
                 }
                 else if (state == 'unselected'){
                     return 'unknown';
@@ -471,10 +474,13 @@
             },
             update(data){
                 this.updateTurn(data.turn);
-                this.updateBoard(data.board);
-                this.updateScore(data.score);
-                this.updateWinner(data.winner);
-                this.updateAssassin(data.assassin);
+                let board = this.myTeam === 'blue' ? data.blueBoard : data.redBoard;
+                this.updateBoard(board);
+                let target = this.myTeam === 'blue' ? data.redTarget : data.blueTarget;
+                this.updateTarget(target)
+                // this.updateScore(data.score);
+                // this.updateWinner(data.winner);
+                // this.updateAssassin(data.assassin);
                 this.updateTimer(data.timer);
 
             },
@@ -489,6 +495,10 @@
             updateBoard(board){
                 if (board)
                 this.board = JSON.parse(board);
+            },
+            updateTarget(target){
+                if (target)
+                this.target = target;
             },
             updateScore(score){
                 if (score)
@@ -508,11 +518,8 @@
                 }
             },
             selectSquare(i,j){
-                if (this.turn != this.myTeam || this.winner || this.myRole == 'spyMaster'){
-                    return;
-                }
-                else {
-                    this.remoteUpdateBoard(i, j);
+                if (this.turn === this.myTeam){
+                    this.remoteUpdateBoard(this.myTeam, i, j);
                 }
             },
             injectStyles(){
@@ -568,21 +575,19 @@
     }
     /* probably should do some media queries here */
     .square {
-        height: 128px; 
+        height: 150px; 
         margin: 4px;
-        width: 100%;
+        width: 100px;
         display: flex;
         justify-content: center;
         align-items: center;
         text-align: center;
         border: 2px solid;
         border-radius: 10px;
+        cursor: pointer;
     }
-    .word {
-        vertical-align: middle;
-        display:inline-block;
-        font-weight: bold;
-        font-size:1.5em;
+    img {
+        border-radius: 10px;
     }
     .unknown {
         background-color: white;
@@ -632,6 +637,9 @@
     .assassin.unselected {
         background-color: #686c6d;
         color: black;
+    }
+    .selected {
+        opacity: .5;
     }
     .pointer {
         cursor: pointer;

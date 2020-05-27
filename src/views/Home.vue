@@ -1,7 +1,7 @@
 <template>
     <div id="nav">
       <h1>
-        Welcome to Codenames!
+        Welcome to Guess Who!
       </h1>
         <div class="container">
             <div class="card login">
