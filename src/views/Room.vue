@@ -1,3 +1,19 @@
+<!--
+    TODO:
+        More efficiently load the images
+            Maybe use webpack and a fancy vue loader?
+            Is there another simpler way?
+        Ability to hide other team's target
+        Show other teams' board on your screen when it's their turn by default
+            Maybe an ability to toggle?
+        Split out the two teams' boards to different snapshots?
+            Maybe each face should be a different snapshot too?
+            This would give a nice fix to any strange rubberbanding.
+        Add in a "final guess" button to win/lose the game!
+        More faces!
+        Have the faces more efficiently/intelligently render.
+-->
+
 <template>
   <div>
   <div class="room">
