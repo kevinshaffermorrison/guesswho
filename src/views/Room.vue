@@ -3,9 +3,6 @@
         More efficiently load the images
             Maybe use webpack and a fancy vue loader?
             Is there another simpler way?
-        Ability to hide other team's target
-        Show other teams' board on your screen when it's their turn by default
-            Maybe an ability to toggle?
         Split out the two teams' boards to different snapshots?
             Maybe each face should be a different snapshot too?
             This would give a nice fix to any strange rubberbanding.
@@ -125,21 +122,6 @@
                     <input @change="remoteUpdatePlayer({id: myPlayerId, name:initName})" type="text" class="form-control" name="initName" v-model="initName">
                 </b-col>
             </b-row>
-            <!-- <br>
-            <b-row>
-                <b-col>
-                    <b-button 
-                        :variant="myRole=='spyMaster' ? 'dark' : 'outline-dark'" 
-                        @click="remoteUpdatePlayer({id: myPlayerId, role:'spyMaster'})"
-                    ><font-awesome-icon icon="user-secret" />&nbsp;Spy Master
-                    </b-button>
-                    <b-button 
-                        :variant="myRole=='spyMaster' ? 'outline-dark' : 'dark'" 
-                        @click="remoteUpdatePlayer({id: myPlayerId, role:'peasant'})"
-                    ><font-awesome-icon icon="user" />&nbsp;Peasant
-                    </b-button>
-                </b-col>
-            </b-row> -->
             <hr>
             <b-button class="mt-2" variant="danger" @click="newGame()"><font-awesome-icon icon="play-circle" />&nbsp;New Game</b-button>
         </b-col>
@@ -151,15 +133,10 @@
                     <b-col sm v-for="(col,j) in row" :key="`${i}${j}`">
                             <div
                                 @click="selectSquare(i,j)"
-                                class="square"
-                                :class="board.state[i][j]"
+                                class="word square"
+                                :style="`background-image: url('https://shaffer-morrison.com/guesswho/people/${col}.png')`"
+                                :class="`${board.state[i][j]} vignette-${turn} ${turn === myTeam ? 'pointer' : ''}`"
                             >
-                                <!-- TODO: clean this logic up? -->
-                                <img 
-
-                                    class="word"
-                                    :src="`https://shaffer-morrison.com/guesswho/people/${col}.png`"
-                                />
                             </div>
                     </b-col>
                 </b-row>
@@ -194,14 +171,20 @@
             </b-row>
             <hr>
             <template v-if="['red','blue'].includes(myTeam)">
-                <h4  :class="`${getOtherTeam(myTeam)}-team`" class="header">
+                <h4  @click="showTarget = !showTarget" :class="`${getOtherTeam(myTeam)}-team`" class="header pointer">
                     {{getOtherTeam(myTeam)}}'s Target
                 </h4>
-                            <img 
-
-                    class="word"
-                    :src="`https://shaffer-morrison.com/guesswho/people/${target}.png`"
-                />
+                <template v-if="showTarget">
+                    <img
+                        class="word"
+                        :src="`https://shaffer-morrison.com/guesswho/people/${target}.png`"
+                    />
+                </template>
+                <template v-else>
+                    <div class="pointer" @click="showTarget = !showTarget">
+                        (click to show target)
+                    </div>
+                </template>
             <hr>
             </template>
             <!-- <b-row>
@@ -282,8 +265,10 @@
                    values: [],
                    state: []
                },
+               data: {},
                score: {},
                turn: null,
+               showTarget: true,
                target: null,
                teams: ['red','blue'],
                initName: null,
@@ -463,6 +448,9 @@
                         const idx = this.players.findIndex(p=>p.id===change.doc.data().id);
                         this.players.splice(idx,1);
                     }
+                    if (change.doc.id === this.myPlayerId){
+                        this.update(this.data);
+                    }
                 });
             },
             async initRoom(){
@@ -492,7 +480,8 @@
             },
             update(data){
                 this.updateTurn(data.turn);
-                let board = this.myTeam === 'blue' ? data.blueBoard : data.redBoard;
+                this.data = data;
+                let board = data.turn === 'blue' ? data.blueBoard : data.redBoard;
                 this.updateBoard(board);
                 let target = this.myTeam === 'blue' ? data.redTarget : data.blueTarget;
                 this.updateTarget(target)
@@ -600,9 +589,9 @@
         justify-content: center;
         align-items: center;
         text-align: center;
-        border: 2px solid;
+        /* border: 2px solid; */
         border-radius: 10px;
-        cursor: pointer;
+        /* cursor: pointer; */
     }
     img {
         border-radius: 10px;
@@ -682,5 +671,12 @@
     .custom-control-input:checked~.custom-control-label::before {
         border-color: black !important;
         background-color: black !important;
+    }
+    .vignette-blue {
+        box-shadow: inset 0 0 25px #11779F;
+    }
+    .vignette-red {
+        box-shadow: inset 0 0 25px  #B32728;
+        /* box-shadow: outset -3px 9px 0px #B32728; */
     }
 </style>
